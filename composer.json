@@ -1,0 +1,25 @@
+{
+  "name": "tvart/facebook",
+  "description": "lost in memories, 60-70 psychedelic sounds and other obscurities",
+  "keywords":	["music","rock", "psychedelic"],
+  "homepage":	"http://vartan.torossian.com",
+  "minimum-stability": "stable",
+  "license": "MIT License",
+  "authors": [
+    {
+      "homepage":	"http://lostinmemories.free.fr",
+      "name": "tvart",
+      "email": "vartan.torossian@free.fr",
+      "role":	"Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.4.0",
+    "facebook/php-sdk-v4": "^4.0"
+  },
+  "autoload":	{
+    "psr-4":	{
+      "Tvart\\Facebook\\":	"src/"
+    }
+  }
+}
