@@ -1,2 +1,4 @@
 /.idea
 /vendor
+/old.index.php
+/src/Config.php
