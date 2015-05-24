@@ -62,62 +62,52 @@ if($session){
     $user_graph = (new FacebookRequest($session, 'GET', '/me'))->execute()->getGraphObject(GraphUser::className())->asArray();
 }
 
-$todo = $_REQUEST['switch_tab_content'];
-switch($todo){
-    case 'force_update_image' :
-        $filename = str_replace('.csv', '', basename($file));
-        $output .= '<input class="m_t_10" type="button" name="cancel" value="Cancel" onclick="showRowList(\''.$filename.'\',3);return false;"><br/>';
+$photos = [
+    ["url" => "./public/imgs/abs1.jpeg", "msg" => '<a class="button" href="index.php?switch_tab_content=switch_tab_3&todo=1" ><i class="fa fa-image"></i>Upload it</a>'],
+    ["url" => "./public/imgs/abs2.jpeg", "msg" => '<a class="button" href="index.php?switch_tab_content=switch_tab_3&todo=2" ><i class="fa fa-image"></i>Upload it</a>'],
+    ["url" => "./public/imgs/abs3.jpeg", "msg" => '<a class="button" href="index.php?switch_tab_content=switch_tab_3&todo=3" ><i class="fa fa-image"></i>Upload it</a>'],
+];
+$tab_content = $_REQUEST['switch_tab_content'];
+$todo = $_REQUEST['todo'];
+switch($tab_content){
+    /* ------- UPLOAD PHOTOS ----------------*/
+    case 'switch_tab_3' :
+        if($todo > 0){
+            try {
+                $response = (new FacebookRequest(
+                    $session, 'POST', '/me/photos', array(
+                        'source' => new CURLFile($photos[$todo-1]["url"], 'image/jpeg', "test.jpg"),
+                        'message' => "I've just uploaded this photo using tvart's fb app framework"
+                    )
+                ))->execute()->getGraphObject(GraphAlbum::className());
+                $photos[$todo-1]["msg"] = "Image Posted <br/>with id: " . $response->getProperty('id');
+                //echo "Posted with id: " . $response->getId();
+            } catch(FacebookRequestException $e) {
+                $photos[$todo-1]["msg"] =  "Exception occured, code: " . $e->getCode();
+                $photos[$todo-1]["msg"] .= " with message: " . $e->getMessage();
+            }catch( Exception $e){
+                $photos[$todo-1]["msg"] =  "Exception occured, code: " . $e->getCode();
+                $photos[$todo-1]["msg"] .= " with message: " . $e->getMessage();
+            }
+        }
         break;
+    /* ------- POST LINK ----------------*/
+    case 'switch_tab_4' :
+        try {
+            $response = (new FacebookRequest(
+                $session, 'POST', '/me/feed', array(
+                    'link' => 'http://fr.wikipedia.org/wiki/%C3%89pict%C3%A8te',
+                    'message' => 'This guy is a genius!'
+                )
+            ))->execute()->getGraphObject();
+            echo "Posted with id: " . $response->getProperty('id');
+        } catch(FacebookRequestException $e) {
+            echo "Exception occured, code: " . $e->getCode();
+            echo " with message: " . $e->getMessage();
+        }
     default :
-        $output = "No parameter found";
         break;
 }
-/* ------- POST LINK ----------------*/
-/*try {
-    $response = (new FacebookRequest(
-        $session, 'POST', '/me/feed', array(
-            'link' => 'lostinmemories.free.fr',
-            'message' => 'ce moi qui lait fééeeee'
-        )
-    ))->execute()->getGraphObject();
-    echo "Posted with id: " . $response->getProperty('id');
-} catch(FacebookRequestException $e) {
-    echo "Exception occured, code: " . $e->getCode();
-    echo " with message: " . $e->getMessage();
-}*/
-
-/* ------- UPLOAD PHOTO ----------------*/
-/*try {
-    // Upload to a user's profile. The photo will be in the
-    // first album in the profile. You can also upload to
-    // a specific album by using /ALBUM_ID as the path
-    $response = (new FacebookRequest(
-        $session, 'POST', '/me/photos', array(
-            'source' => new CURLFile('./imgs/test-upload-delete-my-face.jpg', 'image/jpeg', "test.jpg"),
-            'message' => 'User provided message'
-        )
-    ))->execute()->getGraphObject(GraphAlbum::className());
-    // If you're not using PHP 5.5 or later, change the file reference to:
-    // 'source' => '@/path/to/file.name'
-    echo "Posted with id: " . $response->getProperty('id');
-    echo "Posted with id: " . $response->getId();
-} catch(FacebookRequestException $e) {
-    echo "Exception occured, code: " . $e->getCode();
-    echo " with message: " . $e->getMessage();
-}catch( Exception $e){
-    echo "Exception occured, code: " . $e->getCode();
-    echo " with message: " . $e->getMessage();
-}*/
-// This fetches some things that you like . 'limit=*" only returns * values.
-// To see the format of the data you are retrieving, use the "Graph API
-// Explorer" which is at https://developers.facebook.com/tools/explorer/
-//$likes = Formater::idx($facebook->api('/me/likes?limit=4'), 'data', array());
-
-// This fetches 4 of your friends.
-//$friends = Formater::idx($facebook->api('/me/friends?limit=4'), 'data', array());
-
-// And this returns 16 of your photos.
-//$photos = Formater::idx($facebook->api('/me/photos?limit=16'), 'data', array());
 ?>
 <!DOCTYPE HTML>
 <html>
@@ -140,7 +130,7 @@ switch($todo){
         <ul class="tabs">
             <li><a href="#tab1" onclick="switch_tab_1(); return false;">About</a></li>
             <li><a href="#tab2" onclick="switch_tab_2(); return false;">User Profil</a></li>
-            <li><a href="#tab3" onclick="switch_tab_3(); return false;">Publish Photo</a></li>
+            <li><a href="#tab3" onclick="switch_tab_3(0); return false;">Publish Photo</a></li>
             <li><a href="#tab4" onclick="switch_tab_4(); return false;">Publish Feed</a></li>
         </ul>
 
@@ -212,16 +202,68 @@ switch($todo){
 
             <div id="tab3" class="tab_content display_none">
                 <h3>Post Photos</h3>
-                <p>Webdesigntuts+ is a blog made to house and showcase some of the best web design tutorials and articles around. We publish tutorials that not only produce great results and interfaces, but explain the techniques behind them in a friendly, approachable manner.</p>
-                <p>Web design is a booming industry with a lot of competition. We hope that reading Webdesigntuts+ will help our readers learn a few tricks, techniques and tips that they might not have seen before and help them maximize their creative potential!</p>
-                <p><strong>Webdesigntuts+ is part of the Tuts+ Network</strong></p>
+                <p>
+                    <?php
+                        if(!empty($photos)){
+                    ?>
+                <table>
+                    <tr>
+                        <th style="padding: 12px;">Image 1</th>
+                        <th style="padding: 12px;">Image 2</th>
+                        <th style="padding: 12px;">Image 3</th>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;"><img src="<?php echo $photos[0]["url"]; ?>"></td>
+                        <td style="padding: 12px;"><img src="<?php echo $photos[1]["url"]; ?>"></td>
+                        <td style="padding: 12px;"><img src="<?php echo $photos[2]["url"]; ?>"></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 12px;"><?php echo (!$session)? "You have to be logged in" : $photos[0]["msg"]; ?></td>
+                        <td style="padding: 12px;"><?php echo (!$session)? "You have to be logged in" : $photos[1]["msg"]; ?></td>
+                        <td style="padding: 12px;"><?php echo (!$session)? "You have to be logged in" : $photos[2]["msg"]; ?></td>
+                    </tr>
+                </table>
+                <?php
+                    }else{
+                    echo "oops!";
+                }
+                ?>
+                </p>
             </div><!--End Tab 3 -->
 
             <div id="tab4" class="tab_content display_none">
                 <h3>Post Feeds</h3>
-                <p>Webdesigntuts+ is a blog made to house and showcase some of the best web design tutorials and articles around. We publish tutorials that not only produce great results and interfaces, but explain the techniques behind them in a friendly, approachable manner.</p>
-                <p>Web design is a booming industry with a lot of competition. We hope that reading Webdesigntuts+ will help our readers learn a few tricks, techniques and tips that they might not have seen before and help them maximize their creative potential!</p>
-                <p><strong>Webdesigntuts+ is part of the Tuts+ Network</strong></p>
+                <p>
+                    Sometimes it happens you want to feed automatically your wall.<br/>
+                    You are in this case when you are a professional, and you need to<br/>
+                    axe your communication within your facebook page.<br/>
+                </p>
+                <p>
+                    Then imagine you have your own blog, where articles are published frequently.<br/>
+                    And as you are lazy you don't want to connect to your facebook page<br/>
+                    every time a new article is ready to publish it in your wall.
+                </p>
+                <p>
+                    So, what you gonna do? It's easy! You gonna use this app<br/>
+                    And what will do this app?
+                    <ul>
+                        <il>Create a FacebookRequest Object</il>
+                        <il>Passing to this object following params:</il>
+                        <il>
+                            <ol>
+                                <li>Your FacebookSession object</li>
+                                <li>POST //This is the method of your request</li>
+                                <li>Graph model : /me/feed </li>
+                                <li>An array with keys : link & message</li>
+                            </ol>
+                        </il>
+                    </ul>
+                    <?php if(!$session){
+                        echo "<strong>Login to try it!</strong>";
+                    }else{
+                        echo '<br/><a class="button" href="index.php?switch_tab_content=switch_tab_4&todo=1" ><i class="fa fa-upload"></i> <strong>Feed your wall</strong></a>';
+                    }?>
+                </p>
             </div><!--End Tab 4 -->
         </div><!--End Tab Container -->
 

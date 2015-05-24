@@ -52,17 +52,17 @@ function switch_tab_2(){
     });
 }
 
-function switch_tab_3(){
+function switch_tab_3($id){
     $('#tab3').removeClass("display_none");
     $('#tab2').addClass("display_none");
     $('#tab1').addClass("display_none");
     $('#tab4').addClass("display_none");
     $.ajax({
         url: 'index.php',
-        data:'todo=switch_tab_3',
-        type:'POST',
+        data: 'switch_tab_content=switch_tab_3&todo='+$id,
+        dataType:'html',
+        type:'post',
         error: function(){
-            //alert("load tab 1");
             //$('#wait').addClass("disp_none");
         },
         success:function(data){

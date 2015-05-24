@@ -2,3 +2,4 @@
 /vendor
 /old.index.php
 /src/Config.php
+/composer.lock
